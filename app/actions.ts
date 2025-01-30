@@ -31,7 +31,7 @@ const Categories = [
   "Fast & Express Auto Spa",
 ] as const;
 
-type BusinessCategory = (typeof Categories)[number];
+export type BusinessCategory = (typeof Categories)[number];
 
 // Define response schema for validation
 const BusinessNameSchema = z.object({
@@ -468,7 +468,7 @@ export const generateFAQs = async (): Promise<
 
   const faqEntries = rawResponse.split("- Question: ").slice(1);
   const faqs = faqEntries.map((entry) => {
-    const [question, answer] = entry.split("\n- Answer: ");
+    const [question, answer] = entry.split("- Answer: ");
     return {
       question:
         question?.trim() ||
