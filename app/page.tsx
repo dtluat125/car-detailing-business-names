@@ -1,101 +1,152 @@
-import Image from "next/image";
+import { generateMetaData, generateBusinessNames } from "./actions";
+import { Metadata } from "next";
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-export default function Home() {
+// Define metadata generation for Next.js
+export async function generateMetadata(): Promise<Metadata> {
+  const meta = await generateMetaData();
+  return {
+    title: meta.title,
+    description: meta.description,
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      type: "website",
+    },
+  };
+}
+
+export default async function Home() {
+  const businessNames = await generateBusinessNames();
+  const metadata = await generateMetadata();
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="w-full max-w-5xl mx-auto p-6 space-y-10">
+      {/* Header Section */}
+      <section className="text-center">
+        <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+          {metadata.title as string}
+        </h1>
+        <p className="text-base md:text-lg text-gray-700 mb-6">
+          {metadata.description as string}
+        </p>
+        <Link
+          className={buttonVariants({
+            variant: "default",
+            size: "lg",
+            className: "text-lg",
+          })}
+          href="/"
+        >
+          Generate New Names 🚀
+        </Link>
+      </section>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* Category-based AI-Generated Names in Responsive Table Format */}
+      <section>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-6">
+          Creative Business Name Ideas
+        </h2>
+        {Object.entries(businessNames).map(([category, names]) => (
+          <div key={category} className="mb-8">
+            <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
+              {category}
+            </h3>
+            <div className="overflow-x-auto rounded-lg border shadow-md">
+              <Table className="min-w-[600px]">
+                <TableHeader className="bg-gray-100">
+                  <TableRow className="text-sm md:text-base">
+                    <TableHead className="p-3 text-left">Name</TableHead>
+                    <TableHead className="p-3 text-left">Tagline</TableHead>
+                    <TableHead className="p-3 text-left">Description</TableHead>
+                    <TableHead className="p-3 text-left">Best For</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {names.map(
+                    ({ name, tagline, description, bestFor }, index) => (
+                      <TableRow key={index} className="border">
+                        <TableCell className="p-3 text-sm md:text-base font-medium">
+                          {name}
+                        </TableCell>
+                        <TableCell className="p-3 text-sm md:text-base italic text-gray-600">
+                          &quot;{tagline}&quot;
+                        </TableCell>
+                        <TableCell className="p-3 text-sm md:text-base">
+                          {description}
+                        </TableCell>
+                        <TableCell className="p-3 text-sm md:text-base text-gray-500">
+                          {bestFor.join(", ")}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* Branding & Business Strategy Tips */}
+      <section className="bg-gray-50 p-6 md:p-8 rounded-lg shadow-md">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+          How to Choose the Best Business Name
+        </h2>
+        <p className="text-gray-700 mb-4">
+          Picking the right name for your car detailing business is crucial for
+          branding and attracting customers. Here are some expert tips:
+        </p>
+        <ul className="list-disc pl-4 md:pl-6 space-y-3 text-gray-700 text-sm md:text-base">
+          <li>
+            <strong>Keep it Simple & Memorable:</strong> Shorter names tend to
+            be more recognizable and easier to market.
+          </li>
+          <li>
+            <strong>Use Descriptive Keywords:</strong> Words like
+            &quot;Shine,&quot; &quot;Auto,&quot; and &quot;Detailing&quot; help
+            immediately define your business.
+          </li>
+          <li>
+            <strong>Check Domain & Social Media Availability:</strong> Ensure
+            your business name is available as a website and on social media
+            platforms.
+          </li>
+          <li>
+            <strong>Consider Future Growth:</strong> Avoid overly niche names
+            that may limit expansion opportunities.
+          </li>
+        </ul>
+      </section>
+
+      {/* Call-to-Action Section */}
+      <section className="text-center">
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
+          Need More Custom Branding Help?
+        </h2>
+        <p className="text-gray-700 mb-4 text-sm md:text-base">
+          We offer business name brainstorming, domain research, and branding
+          assistance.
+        </p>
+        <Link
+          className={buttonVariants({
+            variant: "default",
+            size: "lg",
+          })}
+          href="/"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Explore branding services 🚀
+        </Link>
+      </section>
     </div>
   );
 }
