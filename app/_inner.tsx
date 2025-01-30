@@ -91,7 +91,7 @@ export default function Inner() {
             (metadata.description as string)
           )}
         </div>
-        <GenerateButton />
+        {!isPending && <GenerateButton />}
       </section>
       {/* Category-based AI-Generated Names in Responsive Table Format */}
       <section>
