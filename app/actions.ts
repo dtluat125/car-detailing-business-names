@@ -72,10 +72,30 @@ async function fetchAIContent(prompt: string): Promise<string> {
 export const generateMetaData = cache(
   async (): Promise<{ title: string; description: string }> => {
     const rawResponse = await fetchAIContent(`
-        Generate an SEO-optimized meta title and meta description for a page about car detailing business names.
-        - Title: Keep it under 60 characters.
-        - Description: Keep it under 160 characters.
-        - Format: "Title: <Title Here>\nDescription: <Description Here>"
+      You are an expert in SEO and high-converting copywriting. 
+      Generate a compelling and optimized meta title and meta description for a web page about car detailing business name ideas.
+
+      **Meta Title Requirements:**
+      - Must be under 60 characters.
+      - Use strong keywords such as "Best Car Detailing Business Names," "Creative Car Wash Name Ideas," or "Unique Auto Spa Branding."
+      - Evoke curiosity or a sense of exclusivity.
+      - Avoid generic words like "Welcome" or "Homepage."
+      - Examples: "Best Car Detailing Business Names | Get Inspired" or "Luxury & Mobile Car Wash Name Ideas."
+
+      **Meta Description Requirements:**
+      - Must be under 160 characters.
+      - Provide a concise and engaging summary of the page.
+      - Include keywords like "Luxury Car Detailing," "Mobile Car Wash," "Eco-Friendly Auto Spa," "Business Name Generator."
+      - Inspire action: "Discover creative car detailing business names and branding ideas. Get unique, catchy, and memorable names for your car wash or detailing service."
+
+      **Output Format:**
+      Title: <Your generated title here>
+      Description: <Your generated meta description here>
+
+      **Important Notes:**
+      - Do not include explanations, introductions, or extra text.
+      - Ensure the result is formatted exactly as required.
+      - Do not use placeholders like "<insert title here>"—provide final, polished content.
     `);
 
     const titleMatch = rawResponse.match(/Title: (.+)/)?.[1];
@@ -240,49 +260,42 @@ Best For: Busy Commuters, Families
 
     const rawResponse =
       (await fetchAIContent(`
-          Generate 5 business names per category below with a tagline, branding description, and best fit category.
-          Each category must follow this strict structure:
+      You are a branding and marketing expert specializing in car detailing businesses. 
+      Generate **five** unique, high-quality business name ideas per category below. 
+      Each business name should be **brandable, memorable, and optimized for SEO**.
 
-            <Category Name>:
-            Name: <Business Name 1>
-            Tagline: <Tagline>
-            Description: <Short Description>
-            Best For: <Comma-separated list of categories>
+      **Guidelines for Each Entry:**
+      - **Name:** Must be catchy, unique, and resonate with the category.
+      - **Tagline:** Should be short, compelling, and evoke trust or quality.
+      - **Description:** A one-liner explaining the business concept in an engaging way.
+      - **Best For:** A comma-separated list of the most relevant audiences.
 
-            Name: <Business Name 2>
-            Tagline: <Tagline>
-            Description: <Short Description>
-            Best For: <Comma-separated list of categories>
+      **Category List:**
+      - Luxury Car Detailing
+      - Eco-Friendly Car Cleaning
+      - Mobile Car Wash
+      - Classic & Vintage Car Detailing
+      - Fast & Express Auto Spa
 
-            Name: <Business Name 3>
-            Tagline: <Tagline>
-            Description: <Short Description>
-            Best For: <Comma-separated list of categories>
+      **Output Format (Strictly Follow This):**
+      <Category Name>:
+      Name: <Business Name 1>
+      Tagline: <Tagline>
+      Description: <Short Business Description>
+      Best For: <Comma-separated target audience>
 
-            Name: <Business Name 4>
-            Tagline: <Tagline>
-            Description: <Short Description>
-            Best For: <Comma-separated list of categories>
+      Name: <Business Name 2>
+      Tagline: <Tagline>
+      Description: <Short Business Description>
+      Best For: <Comma-separated target audience>
 
-            Name: <Business Name 5>
-            Tagline: <Tagline>
-            Description: <Short Description>
-            Best For: <Comma-separated list of categories>
+      (Repeat for 5 names per category)
 
-          Categories:
-          - Luxury Car Detailing
-          - Eco-Friendly Car Cleaning
-          - Mobile Car Wash
-          - Classic & Vintage Car Detailing
-          - Fast & Express Auto Spa
-
-         Instructions:
-          - Each business listing must have exactly 4 fields (Name, Tagline, Description, Best For).
-          - No extra text, headers, explanations, or bullet points.
-          - Each business must be separated by exactly one blank line.
-          - The Best For field should be a comma-separated list of relevant categories.
-          - Maintain a clean, structured format without unnecessary spaces or variations.
-          - Tagline should not be in quotes.
+      **Important Notes:**
+      - Do not add extra explanations, bullet points, or separators.
+      - Do not include generic or low-effort names like "Best Car Detailing."
+      - Taglines should be unique and aligned with the business value.
+      - Ensure each business name is **distinct** and does not repeat across categories.
 
       `)) || fallbackResponse;
 

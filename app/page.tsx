@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import GenerateButton from "@/components/GenerateButton";
 
 // Define metadata generation for Next.js
 export async function generateMetadata(): Promise<Metadata> {
@@ -39,16 +40,7 @@ export default async function Home() {
         <p className="text-base md:text-lg text-gray-700 mb-6">
           {metadata.description as string}
         </p>
-        <Link
-          className={buttonVariants({
-            variant: "default",
-            size: "lg",
-            className: "text-lg",
-          })}
-          href="/"
-        >
-          Generate New Names 🚀
-        </Link>
+        <GenerateButton />
       </section>
 
       {/* Category-based AI-Generated Names in Responsive Table Format */}
