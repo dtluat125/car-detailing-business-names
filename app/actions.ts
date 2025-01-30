@@ -2,7 +2,6 @@
 "use server";
 
 import OpenAI from "openai";
-import { cache } from "react";
 import { z } from "zod";
 
 const configuration = {
@@ -69,9 +68,11 @@ async function fetchAIContent(prompt: string): Promise<string> {
 }
 
 // AI-Powered Metadata Generation (Next.js Metadata API)
-export const generateMetaData = cache(
-  async (): Promise<{ title: string; description: string }> => {
-    const rawResponse = await fetchAIContent(`
+export const generateMetaData = async (): Promise<{
+  title: string;
+  description: string;
+}> => {
+  const rawResponse = await fetchAIContent(`
       You are an expert in SEO and high-converting copywriting. 
       Generate a compelling and optimized meta title and meta description for a web page about car detailing business name ideas.
 
@@ -98,35 +99,33 @@ export const generateMetaData = cache(
       - Do not use placeholders like "<insert title here>"—provide final, polished content.
     `);
 
-    const titleMatch = rawResponse.match(/Title: (.+)/)?.[1];
-    const descriptionMatch = rawResponse.match(/Description: (.+)/)?.[1];
+  const titleMatch = rawResponse.match(/Title: (.+)/)?.[1];
+  const descriptionMatch = rawResponse.match(/Description: (.+)/)?.[1];
 
-    const metadata = {
-      title: titleMatch || "Best Car Detailing Business Name Ideas | Zarla",
-      description:
-        descriptionMatch ||
-        "Explore AI-generated business name ideas for car detailing services. Get unique names for luxury, eco-friendly, mobile, and vintage car detailing companies.",
-    };
+  const metadata = {
+    title: titleMatch || "Best Car Detailing Business Name Ideas | Zarla",
+    description:
+      descriptionMatch ||
+      "Explore AI-generated business name ideas for car detailing services. Get unique names for luxury, eco-friendly, mobile, and vintage car detailing companies.",
+  };
 
-    return MetaDataSchema.parse(metadata);
-  }
-);
+  return MetaDataSchema.parse(metadata);
+};
 
 // AI-Powered Business Name Generation (Manual Extraction)
 // Generate Business Names with Context, Taglines, and Best Fit Category
-export const generateBusinessNames = cache(
-  async (): Promise<
-    Record<
-      BusinessCategory,
-      {
-        name: string;
-        tagline: string;
-        description: string;
-        bestFor: string[];
-      }[]
-    >
-  > => {
-    const fallbackResponse = `
+export const generateBusinessNames = async (): Promise<
+  Record<
+    BusinessCategory,
+    {
+      name: string;
+      tagline: string;
+      description: string;
+      bestFor: string[];
+    }[]
+  >
+> => {
+  const fallbackResponse = `
  Luxury Car Detailing:  
 Name: Pinnacle Shine  
 Tagline: "Elevate Your Elegance."  
@@ -258,8 +257,8 @@ Description: Your go-to express auto spa for fast, reliable car detailing servic
 Best For: Busy Commuters, Families
     `;
 
-    const rawResponse =
-      (await fetchAIContent(`
+  const rawResponse =
+    (await fetchAIContent(`
       You are a branding and marketing expert specializing in car detailing businesses. 
       Generate **five** unique, high-quality business name ideas per category below. 
       Each business name should be **brandable, memorable, and optimized for SEO**.
@@ -299,113 +298,127 @@ Best For: Busy Commuters, Families
 
       `)) || fallbackResponse;
 
-    // Ensure AI response is clean
-    const cleanedResponse = rawResponse
-      .trim()
-      .replace(/\r/g, "") // Remove carriage returns for consistency
-      .replace(/\n{3,}/g, "\n"); // Remove excessive newlines
+  // Ensure AI response is clean
+  const cleanedResponse = rawResponse
+    .trim()
+    .replace(/\r/g, "") // Remove carriage returns for consistency
+    .replace(/\n{3,}/g, "\n"); // Remove excessive newlines
 
-    console.log("🔍 Cleaned AI Response:\n", cleanedResponse);
+  console.log("🔍 Cleaned AI Response:\n", cleanedResponse);
 
-    const extractedNames: Record<
-      BusinessCategory,
-      {
-        name: string;
-        tagline: string;
-        description: string;
-        bestFor: string[];
-      }[]
-    > = {} as any;
+  const extractedNames: Record<
+    BusinessCategory,
+    {
+      name: string;
+      tagline: string;
+      description: string;
+      bestFor: string[];
+    }[]
+  > = {} as any;
 
-    // ✅ Normalize line endings
-    const normalizedResponse = cleanedResponse
-      .replace(/\r\n/g, "\n")
-      .replace(/ +:/g, ":");
+  // ✅ Normalize line endings
+  const normalizedResponse = cleanedResponse
+    .replace(/\r\n/g, "\n")
+    .replace(/ +:/g, ":");
 
-    console.log("🔍 Normalized AI Response:\n", normalizedResponse);
+  console.log("🔍 Normalized AI Response:\n", normalizedResponse);
 
-    // ✅ Debug: Print all detected categories
-    console.log(
-      "🔍 Categories in Response:",
-      normalizedResponse.match(/^.+(?=:\n)/gm)
+  // ✅ Debug: Print all detected categories
+  console.log(
+    "🔍 Categories in Response:",
+    normalizedResponse.match(/^.+(?=:\n)/gm)
+  );
+
+  Categories.forEach((category) => {
+    const normalizedCategory = category.trim();
+
+    // ✅ Step 1: Extract full block of category data
+    // TODO: Finish regex to extract category content
+    const categoryMatch = normalizedResponse.match(
+      new RegExp(
+        `${normalizedCategory}:\\s*\\n((?:\\s*Name:.+\\n\\s*Tagline:.+\\n\\s*Description:.+\\n\\s*Best For:.+\\n?)+)`
+      )
     );
 
-    Categories.forEach((category) => {
-      const normalizedCategory = category.trim();
+    console.log(`🔍 Category Match for "${category}":`, categoryMatch);
 
-      // ✅ Step 1: Extract full block of category data
-      // TODO: Finish regex to extract category content
-      const categoryMatch = normalizedResponse.match(
-        new RegExp(
-          `${normalizedCategory}:\\s*\\n((?:\\s*Name:.+\\n\\s*Tagline:.+\\n\\s*Description:.+\\n\\s*Best For:.+\\n?)+)`
-        )
-      );
-
-      console.log(`🔍 Category Match for "${category}":`, categoryMatch);
-
-      if (!categoryMatch || !categoryMatch[1]) {
-        console.warn(`⚠️ No match found for category: ${category}`);
-        extractedNames[category] = [
-          {
-            name: `${category} Pros`,
-            tagline: "Shining your ride!",
-            description: "Premium auto detailing services.",
-            bestFor: [category],
-          },
-        ];
-        return;
-      }
-
-      const categoryContent = categoryMatch[1].trim();
-      console.log(
-        `✅ Extracted AI Content for "${category}":`,
-        categoryContent
-      );
-
-      // ✅ Step 2: Extract individual business name blocks
-      const nameBlocks =
-        categoryContent.match(
-          /Name:\s*(.+)\n\s*Tagline:\s*(.+)\n\s*Description:\s*(.+)\n\s*Best For:\s*(.+)/g
-        ) || [];
-
-      console.log(
-        `🔍 Extracted Business Entries for "${category}":`,
-        nameBlocks
-      );
-
-      // ✅ Step 3: Convert extracted data into structured format
-      extractedNames[category] = nameBlocks.map((block) => {
-        const name =
-          block.match(/Name:\s*(.+)/)?.[1]?.trim() || "Unnamed Business";
-        const tagline =
-          block.match(/Tagline:\s*(.+)/)?.[1]?.trim() ||
-          "Your car, your shine!";
-        const description =
-          block.match(/Description:\s*(.+)/)?.[1]?.trim() ||
-          "A premium car detailing service.";
-        const bestForRaw = block.match(/Best For:\s*(.+)/)?.[1];
-        const bestFor = bestForRaw
-          ? bestForRaw.split(",").map((x) => x.trim())
-          : ["General Detailing"];
-
-        return { name, tagline, description, bestFor };
-      });
-
-      console.log(
-        `✅ Successfully Extracted ${extractedNames[category].length} Names for "${category}"`
-      );
-    });
-
-    console.log("✅ Final Extracted Names:\n", extractedNames);
-
-    // Validate structure & apply fallback values
-    const validatedData = BusinessNamesSchema.safeParse(extractedNames);
-    if (!validatedData.success) {
-      console.error("❌ Validation Failed:", validatedData.error.format());
+    if (!categoryMatch || !categoryMatch[1]) {
+      console.warn(`⚠️ No match found for category: ${category}`);
+      extractedNames[category] = [
+        {
+          name: `${category} Pros`,
+          tagline: "Shining your ride!",
+          description: "Premium auto detailing services.",
+          bestFor: [category],
+        },
+      ];
+      return;
     }
 
-    return validatedData.success
-      ? (validatedData.data as unknown as Record<
+    const categoryContent = categoryMatch[1].trim();
+    console.log(`✅ Extracted AI Content for "${category}":`, categoryContent);
+
+    // ✅ Step 2: Extract individual business name blocks
+    const nameBlocks =
+      categoryContent.match(
+        /Name:\s*(.+)\n\s*Tagline:\s*(.+)\n\s*Description:\s*(.+)\n\s*Best For:\s*(.+)/g
+      ) || [];
+
+    console.log(`🔍 Extracted Business Entries for "${category}":`, nameBlocks);
+
+    // ✅ Step 3: Convert extracted data into structured format
+    extractedNames[category] = nameBlocks.map((block) => {
+      const name =
+        block.match(/Name:\s*(.+)/)?.[1]?.trim() || "Unnamed Business";
+      const tagline =
+        block.match(/Tagline:\s*(.+)/)?.[1]?.trim() || "Your car, your shine!";
+      const description =
+        block.match(/Description:\s*(.+)/)?.[1]?.trim() ||
+        "A premium car detailing service.";
+      const bestForRaw = block.match(/Best For:\s*(.+)/)?.[1];
+      const bestFor = bestForRaw
+        ? bestForRaw.split(",").map((x) => x.trim())
+        : ["General Detailing"];
+
+      return { name, tagline, description, bestFor };
+    });
+
+    console.log(
+      `✅ Successfully Extracted ${extractedNames[category].length} Names for "${category}"`
+    );
+  });
+
+  console.log("✅ Final Extracted Names:\n", extractedNames);
+
+  // Validate structure & apply fallback values
+  const validatedData = BusinessNamesSchema.safeParse(extractedNames);
+  if (!validatedData.success) {
+    console.error("❌ Validation Failed:", validatedData.error.format());
+  }
+
+  return validatedData.success
+    ? (validatedData.data as unknown as Record<
+        BusinessCategory,
+        {
+          name: string;
+          tagline: string;
+          description: string;
+          bestFor: string[];
+        }[]
+      >)
+    : Categories.reduce(
+        (acc, cat) => ({
+          ...acc,
+          [cat]: [
+            {
+              name: `${cat} Pros`,
+              tagline: "Shining your ride!",
+              description: "Premium auto detailing services.",
+              bestFor: [cat],
+            },
+          ],
+        }),
+        {} as Record<
           BusinessCategory,
           {
             name: string;
@@ -413,63 +426,66 @@ Best For: Busy Commuters, Families
             description: string;
             bestFor: string[];
           }[]
-        >)
-      : Categories.reduce(
-          (acc, cat) => ({
-            ...acc,
-            [cat]: [
-              {
-                name: `${cat} Pros`,
-                tagline: "Shining your ride!",
-                description: "Premium auto detailing services.",
-                bestFor: [cat],
-              },
-            ],
-          }),
-          {} as Record<
-            BusinessCategory,
-            {
-              name: string;
-              tagline: string;
-              description: string;
-              bestFor: string[];
-            }[]
-          >
-        );
-  }
-);
+        >
+      );
+};
 
 // AI-Powered FAQ Generation (Manual Extraction)
-export const generateFAQs = cache(
-  async (): Promise<{ question: string; answer: string }[]> => {
-    const rawResponse = await fetchAIContent(`
-        Write three frequently asked questions and answers about naming a car detailing business.
-        Format:
-        - Question: <question here>
-        - Answer: <answer here>
+export const generateFAQs = async (): Promise<
+  { question: string; answer: string }[]
+> => {
+  const rawResponse = await fetchAIContent(`
+      You are an expert in business branding and marketing. 
+      Generate **three** frequently asked questions (FAQs) with clear and helpful answers about naming a car detailing business.
+
+      **FAQ Guidelines:**
+      - Questions should reflect what real business owners or startups might ask.
+      - Answers must be **concise, authoritative, and SEO-friendly**.
+      - Avoid generic, filler, or overly basic questions.
+
+      **Examples of Good Questions:**
+      - "How do I create a unique and brandable name for my car detailing business?"
+      - "What words or themes work best for luxury, eco-friendly, or mobile car detailing brands?"
+      - "How important is SEO in choosing a business name for a car wash or detailing service?"
+
+      **Output Format (Strictly Follow This):**
+      - Question: <Insert FAQ question here>
+      - Answer: <Insert well-written FAQ answer here>
+
+      - Question: <Insert FAQ question here>
+      - Answer: <Insert well-written FAQ answer here>
+
+      - Question: <Insert FAQ question here>
+      - Answer: <Insert well-written FAQ answer here>
+
+      **Important Notes:**
+      - Do **not** include explanations, introductions, or additional text.
+      - Keep answers under **3 sentences** and actionable.
+      - Ensure questions **do not overlap** in topic.
     `);
 
-    const faqEntries = rawResponse.split("\n- Question: ").slice(1);
-    const faqs = faqEntries.map((entry) => {
-      const [question, answer] = entry.split("\n- Answer: ");
-      return {
-        question:
-          question?.trim() ||
-          "What is the best name for a car detailing business?",
-        answer:
-          answer?.trim() ||
-          "It depends on your branding, but it should be memorable and unique.",
-      };
-    });
+  console.log("🔍 Raw AI Response:\n", rawResponse);
 
-    const validatedData = FAQSchema.safeParse(faqs);
-    return validatedData.success
-      ? validatedData.data
-      : [
-          {
-            question: "How to choose a good business name?",
-            answer: "Pick something relevant, unique, and easy to remember.",
-          },
-        ];
-  }
-);
+  const faqEntries = rawResponse.split("- Question: ").slice(1);
+  const faqs = faqEntries.map((entry) => {
+    const [question, answer] = entry.split("\n- Answer: ");
+    return {
+      question:
+        question?.trim() ||
+        "What is the best name for a car detailing business?",
+      answer:
+        answer?.trim() ||
+        "It depends on your branding, but it should be memorable and unique.",
+    };
+  });
+
+  const validatedData = FAQSchema.safeParse(faqs);
+  return validatedData.success
+    ? validatedData.data
+    : [
+        {
+          question: "How to choose a good business name?",
+          answer: "Pick something relevant, unique, and easy to remember.",
+        },
+      ];
+};

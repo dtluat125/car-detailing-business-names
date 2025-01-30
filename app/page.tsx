@@ -1,4 +1,8 @@
-import { generateMetaData, generateBusinessNames } from "./actions";
+import {
+  generateMetaData,
+  generateBusinessNames,
+  generateFAQs,
+} from "./actions";
 import { Metadata } from "next";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
@@ -11,6 +15,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import GenerateButton from "@/components/GenerateButton";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
 // Define metadata generation for Next.js
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,6 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Home() {
   const businessNames = await generateBusinessNames();
   const metadata = await generateMetadata();
+  const faqs = await generateFAQs();
 
   return (
     <div className="w-full max-w-5xl mx-auto p-6 space-y-10">
@@ -87,6 +98,25 @@ export default async function Home() {
             </div>
           </div>
         ))}
+      </section>
+
+      {/* FAQ Section */}
+      <section className="bg-gray-50 p-6 md:p-8 rounded-lg shadow-md">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+          Frequently Asked Questions
+        </h2>
+        <Accordion type="single" collapsible className="w-full">
+          {faqs.map(({ question, answer }, index) => (
+            <AccordionItem key={index} value={`faq-${index}`}>
+              <AccordionTrigger className="text-lg font-medium text-gray-900">
+                {question}
+              </AccordionTrigger>
+              <AccordionContent className="text-gray-700 text-sm md:text-base">
+                {answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </section>
 
       {/* Branding & Business Strategy Tips */}
