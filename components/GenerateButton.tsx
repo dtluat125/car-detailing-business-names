@@ -14,7 +14,7 @@ export default function GenerateButton() {
       }}
       loading={loading}
     >
-      Generate New Names 🚀
+      Generate New Content 🚀
     </Button>
   );
 }
